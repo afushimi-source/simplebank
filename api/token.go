@@ -6,10 +6,7 @@ import (
 	"net/http"
 	"time"
 
-	db "github.com/afushimi-source/simplebank/db/sqlc"
-	"github.com/afushimi-source/simplebank/util"
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 )
 
 type renewAccessTokenRequest struct {
@@ -68,13 +65,7 @@ func (server *Server) renewAccessToken(ctx *gin.Context) {
 		return
 	}
 
-	accessToken, accessPayload, err := server.tokenMaker.CreateToken(user.Username, server.config.AccessTokenDuration)
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
-		return
-	}
-
-	refreshToken, refreshPayload, err := server.tokenMaker.CreateToken(
+	accessToken, accessPayload, err := server.tokenMaker.CreateToken(
 		refreshPayload.Username,
 		server.config.RefreshTokenDuration,
 	)
