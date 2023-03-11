@@ -9,6 +9,9 @@ createdb:
 dropdb:
 	docker exec -it postgres12 dropdb simple_bank
 
+migratecreate:
+	migrate create -ext sql -dir db/migration -seq init_schema
+
 migrateup:
 	migrate -path db/migration -database "$(DB_URL)" -verbose up
 
@@ -35,8 +38,20 @@ mock:
 
 db_docs:
 	dbdocs build doc/db.dbml
-
+ 
 db_schema:
 	dbml2sql --postgres -o doc/db.schema.sql doc/db.dbml
+ 
+proto:
+	rm -rf pb/*.go
+	rm -rf doc/swagger/*.json
+	protoc -Iproto --go_out=pb --go_opt=paths=source_relative \
+    --go-grpc_out=pb --go-grpc_opt=paths=source_relative \
+		--grpc-gateway_out=pb --grpc-gateway_opt=paths=source_relative \
+		--openapiv2_out=doc/swagger --openapiv2_opt=allow_merge=true,merge_file_name=simple_bank \
+    proto/*.proto
+evans:
+	evans --host localhost --port 9090 -r repl
 
-.PHONY: postgres createdb dropdb migrateup migrateup1 migratedown migratedown1 sqlc test server mock
+.PHONY: postgres createdb dropdb migrateup migrateup1 migratedown migratedown1 sqlc test server mock proto evans
+
